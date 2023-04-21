@@ -3,14 +3,17 @@
 1. Place a model into data/models/Stable-diffusion. E.g. https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned.safetensors
 
 2. Build
-    ```shell
-    docker-compose build webui
-    ```
+   ```shell
+   docker-compose build webui
+   ```
 
-3. Build & run
-    ```shell
-    docker-compose up
-    ```
+3. Run
+   ```shell
+   docker-compose up
+   ```
+   ```shell
+   docker-compose up --build --force-build --remove-orphans
+   ```
 
 4. Use the WebUI on http://127.0.0.1:7860
 

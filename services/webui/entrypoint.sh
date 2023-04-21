@@ -5,12 +5,12 @@ set -Eeuo pipefail
 declare -A MOUNTS
 
 # MOUNT["target_path"]="source_path"
-MOUNTS["${ROOT}/outputs"]="/outputs"
+MOUNTS["${ROOT}/outputs"]="/data/outputs"
 MOUNTS["${ROOT}/models/Stable-diffusion"]="/data/models/Stable-diffusion"
 MOUNTS["${ROOT}/models/dreambooth"]="/data/models/dreambooth"
 MOUNTS["${ROOT}/models/hypernetworks"]="/data/models/hypernetworks"
 MOUNTS["${ROOT}/models/VAE"]="/data/models/VAE"
-MOUNTS["${ROOT}/models/VAE-approx"]="/data/models/VAE-approx"
+#MOUNTS["${ROOT}/models/VAE-approx"]="/data/models/VAE-approx"
 MOUNTS["${ROOT}/models/deepbooru"]="/data/models/deepbooru"
 MOUNTS["${ROOT}/scripts"]="/data/scripts"
 
