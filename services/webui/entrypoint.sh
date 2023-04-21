@@ -6,6 +6,7 @@ declare -A MOUNTS
 
 # MOUNT["target_path"]="source_path"
 MOUNTS["${ROOT}/outputs"]="/data/outputs"
+MOUNTS["${ROOT}/inputs"]="/data/inputs"
 MOUNTS["${ROOT}/models/Stable-diffusion"]="/data/models/Stable-diffusion"
 MOUNTS["${ROOT}/models/dreambooth"]="/data/models/dreambooth"
 MOUNTS["${ROOT}/models/hypernetworks"]="/data/models/hypernetworks"

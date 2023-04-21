@@ -1,4 +1,4 @@
 .idea
 data/**/*.*
-!data/**/*.txt
+!data/models/**/*.txt
 !data/**/.gitkeep
