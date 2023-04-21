@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  webui:
+    build:
+      context: ./services/webui
+      args:
+        DOCKER_BUILDKIT: 1
+    image: stable-diffusion-rocm:1.0
+    cap_add:
+      - SYS_PTRACE
+    devices:
+      - /dev/kfd:/dev/kfd
+      - /dev/dri:/dev/dri
+    ipc: host
+    network_mode: "host"
+    stop_signal: SIGINT
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./data:/data:rw
+      - ./outputs:/outputs:rw
