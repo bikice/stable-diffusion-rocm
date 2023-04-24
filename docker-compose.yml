@@ -17,5 +17,6 @@ services:
     stop_signal: SIGINT
     stdin_open: true
     tty: true
+    shm_size: '8gb'
     volumes:
       - ./data:/data:rw

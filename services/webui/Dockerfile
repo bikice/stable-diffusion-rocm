@@ -75,6 +75,14 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     source venv/bin/activate && \
     python -m pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt
 
+
+RUN --mount=type=cache,target=/root/.cache/pip \
+    cd ${ROOT} && \
+    python -m venv venv && \
+    source venv/bin/activate && \
+    python -m pip install git+https://github.com/cloneofsimo/lora.git && \
+    python -m pip install bitsandbytes==0.36.0
+
 COPY scripts/entrypoint.sh /entrypoint.sh
 
 WORKDIR ${ROOT}
