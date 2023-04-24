@@ -44,17 +44,36 @@ RUN --mount=type=cache,target=/root/.cache/webui \
     git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git ${ROOT}
 
 COPY --from=download /repositories/ ${ROOT}/repositories/
-RUN --mount=type=cache,target=/root/.cache/pip \
-  pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt
 
 RUN --mount=type=cache,target=/root/.cache/pip \
     cd ${ROOT} && \
     python -m venv venv && \
     source venv/bin/activate && \
-    python -m pip install --upgrade pip wheel && \
-    pip install numpy==1.22.4 requests==2.25.1 pytorch-triton-rocm==2.0.1 && \
-    pip install -r requirements_versions.txt && \
-    python -m $TORCH_COMMAND
+    python -m pip install --upgrade pip wheel
+
+RUN --mount=type=cache,target=/root/.cache/pip \
+    cd ${ROOT} && \
+    python -m venv venv && \
+    source venv/bin/activate && \
+    python -m ${TORCH_COMMAND}
+
+RUN --mount=type=cache,target=/root/.cache/pip \
+    cd ${ROOT} && \
+    python -m venv venv && \
+    source venv/bin/activate && \
+    python -m pip install numpy==1.22.4 requests==2.25.1 pytorch-triton-rocm==2.0.1
+
+RUN --mount=type=cache,target=/root/.cache/pip \
+    cd ${ROOT} && \
+    python -m venv venv && \
+    source venv/bin/activate && \
+    python -m pip install -r requirements_versions.txt
+
+RUN --mount=type=cache,target=/root/.cache/pip \
+    cd ${ROOT} && \
+    python -m venv venv && \
+    source venv/bin/activate && \
+    python -m pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt
 
 COPY scripts/entrypoint.sh /entrypoint.sh
 
@@ -66,4 +85,5 @@ ENTRYPOINT ["bash", "/entrypoint.sh"]
 CMD cd ${ROOT} && \
     python -m venv venv && \
     source venv/bin/activate && \
+    python -m pip list > /data/versions.txt && \
     python launch.py --precision full --no-half

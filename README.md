@@ -4,17 +4,18 @@
 
 2. Build
    ```shell
-   docker-compose build webui
+   docker-compose build --force-rm webui
    ```
 
 3. Run
    ```shell
    docker-compose up
    ```
-   ```shell
-   docker-compose up --build --force-build --remove-orphans
-   ```
 
 4. Use the WebUI on http://127.0.0.1:7860
 
-tested on AMD Radeon 6650 XT 8GB (gfx1032) NAVI 23
+5. Summary 
+   - tested on AMD Radeon 6650 XT 8GB (gfx1032) NAVI 23
+   - Using DreamBooth throws Triton Error [HIP]:  Code: 98, Messsage: invalid device function
+      - waiting for: https://github.com/openai/triton/issues/46
+      - pr's: https://github.com/openai/triton/pulls?q=is%3Apr+rocm+
