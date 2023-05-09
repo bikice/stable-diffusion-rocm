@@ -61,7 +61,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     cd ${ROOT} && \
     python -m venv venv && \
     source venv/bin/activate && \
-    python -m pip install numpy==1.22.4 requests==2.25.1 pytorch-triton-rocm==2.0.1
+    python -m pip install pytorch-triton-rocm==2.0.2
 
 RUN --mount=type=cache,target=/root/.cache/pip \
     cd ${ROOT} && \

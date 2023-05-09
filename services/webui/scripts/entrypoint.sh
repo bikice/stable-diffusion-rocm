@@ -11,9 +11,11 @@ MOUNTS["${ROOT}/models/Stable-diffusion"]="/data/models/Stable-diffusion"
 MOUNTS["${ROOT}/models/dreambooth"]="/data/models/dreambooth"
 MOUNTS["${ROOT}/models/hypernetworks"]="/data/models/hypernetworks"
 MOUNTS["${ROOT}/models/VAE"]="/data/models/VAE"
-#MOUNTS["${ROOT}/models/VAE-approx"]="/data/models/VAE-approx"
+MOUNTS["${ROOT}/models/Lora"]="/data/models/Lora"
+MOUNTS["${ROOT}/embeddings"]="/data/embeddings"
 MOUNTS["${ROOT}/models/deepbooru"]="/data/models/deepbooru"
-MOUNTS["${ROOT}/scripts"]="/data/scripts"
+MOUNTS["${ROOT}/static"]="/data/static"
+#MOUNTS["${ROOT}/scripts"]="/data/scripts"
 
 for target_path in "${!MOUNTS[@]}"; do
   set -Eeuo pipefail
