@@ -4,7 +4,7 @@ services:
   stable-diffusion-webui:
     image: stable-diffusion-rocm:1.2
     build:
-      context: ./services/webui
+      context: docker
       args:
         DOCKER_BUILDKIT: 1
     cap_add:
@@ -21,12 +21,6 @@ services:
     tty: true
     shm_size: '8gb'
     volumes:
-      - ./embeddings:/stable-diffusion-webui/embeddings:rw
-      - ./models:/stable-diffusion-webui/models:rw
-      - ./plugins:/stable-diffusion-webui/plugins:rw
-      - ./outputs:/stable-diffusion-webui/outputs:rw
+      - ./data:/data:rw
 volumes:
-  embeddings:
-  models:
-  plugins:
-  outputs:
+  data:

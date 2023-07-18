@@ -1,10 +1,2 @@
 .idea
-data/**/*.*
-!data/models/**/*.txt
-!data/**/.gitkeep
-extensions/
-configs/
-models/
-outputs/
-plugins/
-.env
+data/

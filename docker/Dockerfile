@@ -38,11 +38,18 @@ ENV DEBIAN_FRONTEND=noninteractive \
     HSA_OVERRIDE_GFX_VERSION=10.3.0 \
     PYTORCH_HIP_ALLOC_CONF=garbage_collection_threshold:0.6,max_split_size_mb:128
 
+RUN --mount=type=cache,target=/root/.cache/apt \
+    apt-get update && apt-get install -y --no-install-recommends ffmpeg rsync && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
 SHELL ["/bin/bash", "-c"]
 
 COPY --from=builder /opt/stable-diffusion-webui ${ROOT}
 COPY --from=builder /opt/repositories ${ROOT}/repositories
 COPY --from=builder /opt/extensions ${ROOT}/extensions
+#COPY --chown=1000:1000 --from=builder /opt/stable-diffusion-webui ${ROOT}
+#COPY --chown=1000:1000 --from=builder /opt/repositories ${ROOT}/repositories
+#COPY --chown=1000:1000 --from=builder /opt/extensions ${ROOT}/extensions
 
 WORKDIR ${ROOT}
 
@@ -53,10 +60,11 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     python -m pip install git+https://github.com/cloneofsimo/lora.git && \
     python -m pip install pytorch_lightning
 
-COPY scripts/entrypoint.sh /entrypoint.sh
+COPY entrypoint.sh /entrypoint.sh
 
 WORKDIR ${ROOT}
 EXPOSE 7860
 
 ENTRYPOINT ["bash", "/entrypoint.sh"]
+
 CMD python launch.py --precision full --no-half --opt-sub-quad-attention
