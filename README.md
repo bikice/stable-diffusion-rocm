@@ -1,11 +1,11 @@
 # Stable Diffusion WebUI with ROCm
 
-1. Place models into data/models/Stable-diffusion. E.g. https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned.safetensors
-
-2. Build
+1. Build
    ```shell
    docker-compose build
    ```
+
+2. Place models into data/models/Stable-diffusion. E.g. https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned.safetensors
 
 3. Run
    ```shell
