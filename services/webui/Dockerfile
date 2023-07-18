@@ -1,117 +1,57 @@
-FROM alpine/git:2.36.2 as download
+FROM alpine/git:2.36.2 as builder
 
-RUN mkdir /repositories
+WORKDIR /opt
 
-RUN --mount=type=cache,target=/root/.cache/stable-diffusion-stability-ai \
-    git clone https://github.com/Stability-AI/stablediffusion.git /repositories/stable-diffusion-stability-ai && \
-    cd /repositories/stable-diffusion-stability-ai && \
-    rm -rf assets data/**/*.png data/**/*.jpg data/**/*.gif
+RUN --mount=type=cache,target=/root/.cache/download-sd-webui \
+    git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui /opt/stable-diffusion-webui && \
+    sed -i -e '/^torch\r/d' /opt/stable-diffusion-webui/requirements.txt && \
+    sed -i -e '/^torch\r/d' /opt/stable-diffusion-webui/requirements_versions.txt
 
-RUN --mount=type=cache,target=/root/.cache/taming-transformers \
-    git clone https://github.com/CompVis/taming-transformers.git /repositories/taming-transformers && \
-    cd /repositories/taming-transformers \
-    rm -rf data assets **/*.ipynb
+RUN --mount=type=cache,target=/root/.cache/download-repositories \
+    mkdir /opt/repositories && \
+    git clone https://github.com/Stability-AI/stablediffusion.git /opt/repositories/stable-diffusion-stability-ai && \
+    cd /opt/repositories/stable-diffusion-stability-ai && rm -rf assets data/**/*.png data/**/*.jpg data/**/*.gif && \
+    git clone https://github.com/CompVis/taming-transformers.git /opt/repositories/taming-transformers && \
+    cd /opt/repositories/taming-transformers && rm -rf data assets **/*.ipynb && \
+    git clone https://github.com/crowsonkb/k-diffusion.git /opt/repositories/k-diffusion && \
+    git clone https://github.com/sczhou/CodeFormer.git /opt/repositories/CodeFormer && \
+    cd /opt/repositories/CodeFormer && rm -rf assets inputs && \
+    git clone https://github.com/salesforce/BLIP.git /opt/repositories/BLIP && \
+    git clone https://github.com/pharmapsychotic/clip-interrogator /opt/repositories/clip-interrogator
 
-RUN --mount=type=cache,target=/root/.cache/k-diffusion \
-    git clone https://github.com/crowsonkb/k-diffusion.git /repositories/k-diffusion
+RUN --mount=type=cache,target=/root/.cache/download-extensions \
+    mkdir /opt/extensions && \
+    git clone https://github.com/Mikubill/sd-webui-controlnet.git /opt/extensions/sd-webui-controlnet && \
+    git clone https://github.com/Uminosachi/sd-webui-inpaint-anything.git /opt/extensions/sd-webui-inpaint-anything && \
+    git clone https://github.com/fkunn1326/openpose-editor.git /opt/extensions/openpose-editor
 
-RUN --mount=type=cache,target=/root/.cache/CodeFormer \
-    git clone https://github.com/sczhou/CodeFormer.git /repositories/CodeFormer && \
-    cd /repositories/CodeFormer && \
-    rm -rf assets inputs
-
-RUN --mount=type=cache,target=/root/.cache/BLIP \
-    git clone https://github.com/salesforce/BLIP.git /repositories/BLIP
-
-RUN --mount=type=cache,target=/root/.cache/clip-interrogator \
-    git clone https://github.com/pharmapsychotic/clip-interrogator /repositories/clip-interrogator
-
-RUN --mount=type=cache,target=/root/.cache/sd-webui-controlnet \
-    git clone https://github.com/Mikubill/sd-webui-controlnet.git /repositories/sd-webui-controlnet
-
-RUN --mount=type=cache,target=/root/.cache/sd-webui-inpaint-anything \
-    git clone https://github.com/Uminosachi/sd-webui-inpaint-anything.git /repositories/sd-webui-inpaint-anything
-
-RUN --mount=type=cache,target=/root/.cache/openpose-editor \
-    git clone https://github.com/fkunn1326/openpose-editor.git /repositories/openpose-editor
 
 FROM rocm/pytorch:latest
-
-LABEL maintainer="kristof.kamin@gmail.com"
 
 ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONUNBUFFERED=1 \
     PYTHONIOENCODING=UTF-8 \
-    TORCH_COMMAND='pip install torch torchvision torchaudio --force-reinstall --extra-index-url https://download.pytorch.org/whl/rocm5.4.2' \
     REQS_FILE='requirements.txt' \
     ROOT=/stable-diffusion-webui \
-    HSA_OVERRIDE_GFX_VERSION=10.3.0 \
     CUDA_VERSION=gfx1030 \
-    HF_HOME=/stable-diffusion-webui/.cache/huggingface
+    HF_HOME=/stable-diffusion-webui/.cache/huggingface \
+    HSA_OVERRIDE_GFX_VERSION=10.3.0 \
+    PYTORCH_HIP_ALLOC_CONF=garbage_collection_threshold:0.6,max_split_size_mb:128
 
 SHELL ["/bin/bash", "-c"]
 
-RUN --mount=type=cache,target=/root/.cache/apt \
-    apt-get update && apt-get install rsync -y
+COPY --from=builder /opt/stable-diffusion-webui ${ROOT}
+COPY --from=builder /opt/repositories ${ROOT}/repositories
+COPY --from=builder /opt/extensions ${ROOT}/extensions
 
-RUN --mount=type=cache,target=/root/.cache/webui \
-    git clone https://github.com/AUTOMATIC1111/stable-diffusion-webui.git ${ROOT}
-
-RUN mkdir -p ${HF_HOME}
-
-COPY --from=download /repositories/ ${ROOT}/repositories/
+WORKDIR ${ROOT}
 
 RUN --mount=type=cache,target=/root/.cache/pip \
-    cd ${ROOT} && \
-    python -m venv venv && \
-    source venv/bin/activate && \
-    python -m pip install --upgrade pip wheel
-
-RUN --mount=type=cache,target=/root/.cache/pip \
-    cd ${ROOT} && \
-    python -m venv venv && \
-    source venv/bin/activate && \
-    python -m ${TORCH_COMMAND}
-
-RUN --mount=type=cache,target=/root/.cache/pip \
-    cd ${ROOT} && \
-    python -m venv venv && \
-    source venv/bin/activate && \
-    python -m pip install -r requirements_versions.txt
-
-RUN --mount=type=cache,target=/root/.cache/pip \
-    cd ${ROOT} && \
-    python -m venv venv && \
-    source venv/bin/activate && \
-    python -m pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt
-
-RUN --mount=type=cache,target=/root/.cache/pip \
-    cd ${ROOT} && \
-    python -m venv venv && \
-    source venv/bin/activate && \
-    python -m pip install pytorch-triton-rocm==2.0.2
-
-RUN --mount=type=cache,target=/root/.cache/pip \
-    cd ${ROOT} && \
-    python -m venv venv && \
-    source venv/bin/activate && \
-    python -m pip install git+https://github.com/cloneofsimo/lora.git
-
-RUN --mount=type=cache,target=/root/.cache/extensions \
-    mv ${ROOT}/repositories/sd-webui-controlnet ${ROOT}/extensions/ && \
-    git config --global --add safe.directory /data/extensions/sd-webui-controlnet && \
-    mv ${ROOT}/repositories/sd-webui-inpaint-anything ${ROOT}/extensions/ && \
-    git config --global --add safe.directory /data/extensions/sd-webui-inpaint-anything && \
-    mv ${ROOT}/repositories/openpose-editor ${ROOT}/extensions/ && \
-    git config --global --add safe.directory /data/extensions/openpose-editor
-
-#RUN --mount=type=cache,target=/root/.cache/bitsandbytes \
-#    git clone https://git.ecker.tech/mrq/bitsandbytes-rocm.git /bitsandbytes-rocm && \
-#    cd /bitsandbytes-rocm && \
-#    make hip && \
-#    python -m venv venv && \
-#    source venv/bin/activate && \
-#    python setup.py install
+    python -m pip install --upgrade pip wheel && \
+    python -m pip install -r requirements_versions.txt && \
+    python -m pip install -r ${ROOT}/repositories/CodeFormer/requirements.txt && \
+    python -m pip install git+https://github.com/cloneofsimo/lora.git && \
+    python -m pip install pytorch_lightning
 
 COPY scripts/entrypoint.sh /entrypoint.sh
 
@@ -119,10 +59,4 @@ WORKDIR ${ROOT}
 EXPOSE 7860
 
 ENTRYPOINT ["bash", "/entrypoint.sh"]
-
-#VOLUME [ "/stable-diffusion-rocm/configs","/stable-diffusion-rocm/models", "/stable-diffusion-rocm/outputs","/stable-diffusion-rocm/extensions", "/stable-diffusion-rocm/plugins"]
-
-CMD cd ${ROOT} && \
-    python -m venv venv && \
-    source venv/bin/activate && \
-    python launch.py --precision full --no-half
+CMD python launch.py --precision full --no-half --opt-sub-quad-attention

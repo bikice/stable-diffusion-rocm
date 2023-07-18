@@ -13,10 +13,20 @@ services:
       - /dev/kfd:/dev/kfd
       - /dev/dri:/dev/dri
     ipc: host
+    security_opt:
+      - seccomp:unconfined
     network_mode: "host"
     stop_signal: SIGINT
     stdin_open: true
     tty: true
     shm_size: '8gb'
     volumes:
-      - ./data:/data:rw
+      - ./embeddings:/stable-diffusion-webui/embeddings:rw
+      - ./models:/stable-diffusion-webui/models:rw
+      - ./plugins:/stable-diffusion-webui/plugins:rw
+      - ./outputs:/stable-diffusion-webui/outputs:rw
+volumes:
+  embeddings:
+  models:
+  plugins:
+  outputs:
